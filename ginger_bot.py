@@ -1,13 +1,24 @@
 # import sys
 # # sys.path.append("D:/code/python/projects/trading/serious_bot")
-
-import telebot
-from telebot import types
-import api
-from pprint import pprint
+import pkg_resources
+import subprocess
+import sys
 import datetime as dt
 import time
 import asyncio
+import api
+
+modules = ["telebot"]
+
+for m in modules:
+    try:
+        pkg_resources.get_distribution(m)
+    except pkg_resources.DistributionNotFound:
+        subprocess.run([sys.executable, '-m', 'pip', 'install', m])
+
+import telebot
+from telebot import types
+
 
 
 TOKEN = "8158212209:AAGYHNwv5wUOi5NmKmIDnyD1fnK_d3hJmMk"

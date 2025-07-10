@@ -1,19 +1,33 @@
 # import sys
 # sys.path.append("D:/code/python/projects/trading/serious_bot")
 
+import pkg_resources
+import subprocess
+import sys
+import datetime as dt
+import time 
+import re
+from pprint import pprint
+import warnings
+import asyncio
+from IPython.display import display
+import tables as tb
+
+modules = ["pandas", "pybit"]
+
+for m in modules:
+    try:
+        pkg_resources.get_distribution(m)
+    except pkg_resources.DistributionNotFound:
+        subprocess.run([sys.executable, '-m', 'pip', 'install', m])
+
 from pybit.unified_trading import HTTP 
 from pybit.unified_trading import WebSocket
 from pybit import exceptions
 import pandas as pd
-import datetime as dt
-import time 
-import re
-from IPython.display import display
-import tables as tb
+
 # from func import indicators as inds
-from pprint import pprint
-import warnings
-import asyncio
+
 
 
 warnings.filterwarnings('ignore')
@@ -283,15 +297,6 @@ class API():
         except:
             pass
             # time.sleep(5)
-
-    # def update_with_ws(self):
-    #     for symb in self.symbols:
-    #         for inter in self.intervals:
-    #             self.ws.kline_stream(
-    #                 interval=inter,
-    #                 symbol=symb,
-    #                 callback=self.update_ws_data,
-    #                 )
 
 
     # def go_test(self, symbols, intervals, limit=200, last_closed=False, volume=False, moscow=True, time_to_ind=True, pf=None, 

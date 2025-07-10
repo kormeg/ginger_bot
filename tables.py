@@ -1,46 +1,22 @@
-
-from pybit.unified_trading import HTTP
+import pkg_resources
+import subprocess
+import sys
 import datetime as dt
-from pprint import pprint
-import matplotlib.pyplot as plt 
-import pandas as pd 
-import time
 import re
+from pprint import pprint
 from IPython.display import display
-from time import sleep
+import tables as tb
 
-# ________________________________________________________________________________________________________________
-# константы
+modules = ["pandas"]
 
-bybit_keys = {
-    "serious_bot" : ("NoqGmYkwmKkPfyswDt", "NhWStTRu9lAu43vInKaYd2y68Yd6kqWgcIsW" ),
-    "demo_api" : ("Pgp8m1Uz5BiXdSwCuy", "3kWH1saIVNXMiJZBIku6NV7dcA0mZNcq8Jxa"),
-    "testnet_bot" : ("5sqZD0cdsBdLDL8KOB", "mOog5lTroaYuwWNrmQwWXPvHJyIqvRFcwrSf")
-    }
+for m in modules:
+    try:
+        pkg_resources.get_distribution(m)
+    except pkg_resources.DistributionNotFound:
+        subprocess.run([sys.executable, '-m', 'pip', 'install', m])
 
-now_dt = dt.datetime.now()
-now_timestamp = int(time.mktime(now_dt.timetuple())) * 1000
-
-default_params = {
-    "test" : False,
-    "demo" : True,
-}
-
-# ________________________________________________________________________________________________________________
-# вспомогательные функции
-# ----------------------------------------------------------------------------------------------------------------
-
-def bybit_connect(key, test=False, demo=True):
-    """ Подключение к bybit. возвращает сессию"""
-    client = HTTP(
-        api_key=bybit_keys[key][0],
-        api_secret=bybit_keys[key][1],
-        testnet=test,
-        demo=demo
-        # recv_window=60000
-        )
-    return client
-
+# import matplotlib.pyplot as plt 
+import pandas as pd 
 
 # ----------------------------------------------------------------------------------------------------------------
 
