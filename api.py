@@ -10,10 +10,9 @@ import re
 from pprint import pprint
 import warnings
 import asyncio
-from IPython.display import display
 import tables as tb
 
-modules = ["pandas", "pybit"]
+modules = ["pandas", "pybit", "IPython"]
 
 for m in modules:
     try:
@@ -25,6 +24,7 @@ from pybit.unified_trading import HTTP
 from pybit.unified_trading import WebSocket
 from pybit import exceptions
 import pandas as pd
+from IPython.display import display
 
 # from func import indicators as inds
 
