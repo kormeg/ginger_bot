@@ -4,10 +4,9 @@ import sys
 import datetime as dt
 import re
 from pprint import pprint
-from IPython.display import display
 import tables as tb
 
-modules = ["pandas"]
+modules = ["pandas", "IPython"]
 
 for m in modules:
     try:
@@ -17,6 +16,7 @@ for m in modules:
 
 # import matplotlib.pyplot as plt 
 import pandas as pd 
+from IPython.display import display
 
 # ----------------------------------------------------------------------------------------------------------------
 
