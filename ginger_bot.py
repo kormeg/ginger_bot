@@ -34,7 +34,10 @@ volume_percs = [1000, 2000, 3000, 4000, 5000]
 oi_percs = [5, 10, 20, 30, 40, 50]
 
 bbs = cl.get_symbol_list()
-f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","r")
+try:
+    f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","r")
+except:
+    f = open("C:/ginger_bot/last_symbols.txt","r")
 last_symbols = [x for x in f.read().split(", ") if x in bbs]
 f.close()
 
@@ -77,8 +80,10 @@ settings = {
     "chosen_intervals" :[],
     
 }
-
-f = open("D:/code/python/projects/trading/ginger_bot/last_intervals.txt","r")
+try:
+    f = open("D:/code/python/projects/trading/ginger_bot/last_intervals.txt","r")
+except:
+    f = open("C:/ginger_bot/last_intervals.txt","r")
 last_intervals = [x for x in f.read().split(", ") if x in def_intervals.keys()]
 f.close()
 if last_intervals:
@@ -436,7 +441,10 @@ def go_bot(message):
                     deleted = [x for x in settings["temp_symbols"] if x in settings["chosen_symbols"]]
                     if deleted:
                         settings["temp_symbols"] = [x for x in settings["temp_symbols"] if x not in settings["chosen_symbols"]]
-                        f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
+                        try:
+                            f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
+                        except:
+                            f = open("C:/ginger_bot/last_symbols.txt","w")
                         f.write(", ".join(settings["temp_symbols"]))
                         f.close()
                         settings["chosen_symbols"] = []
@@ -463,7 +471,10 @@ def go_bot(message):
                 if  settings["chosen_symbols"]:
                     if settings["chosen_symbols"]!= settings["temp_symbols"]:
                         settings["temp_symbols"] = settings["chosen_symbols"]
-                        f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
+                        try:
+                            f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
+                        except:
+                            f = open("C:/ginger_bot/last_symbols.txt","w")
                         f.write(", ".join(settings["temp_symbols"]))
                         f.close()
                         settings["chosen_symbols"] = []
@@ -487,7 +498,10 @@ def go_bot(message):
                 if settings["chosen_symbols"]:
                     settings["temp_symbols"] = sorted(list(set(settings["temp_symbols"] + settings["chosen_symbols"])))
                     if settings["temp_symbols"]!= settings["symbols"]:
-                        f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
+                        try:
+                            f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
+                        except:
+                            f = open("C:/ginger_bot/last_symbols.txt","w")
                         f.write(", ".join(settings["temp_symbols"]))
                         f.close()
                         settings["chosen_symbols"] = []
@@ -515,7 +529,10 @@ def go_bot(message):
             elif message.text == "ДОБАВИТЬ ВСЕ ДОСТУПНЫЕ":
                 settings["menu_step"] = "settings"
                 settings["temp_symbols"] = settings["bybit_symbols"]
-                f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
+                try:
+                    f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
+                except:
+                    f = open("C:/ginger_bot/last_symbols.txt","w")
                 f.write(", ".join(settings["temp_symbols"]))
                 f.close()
                 settings["chosen_symbols"] = []
@@ -604,7 +621,10 @@ def go_bot(message):
             elif message.text == "Ok":
                 if settings["chosen_intervals"]:
                     settings["temp_intervals"] = {k:v for k,v in def_intervals.items() if k in settings["chosen_intervals"]}
-                    f = open("D:/code/python/projects/trading/serious_bot/telegram/last_intervals.txt","w")
+                    try:
+                        f = open("D:/code/python/projects/trading/serious_bot/telegram/last_intervals.txt","w")
+                    except:
+                            f = open("C:/ginger_bot/last_intervals.txt","w")
                     f.write(", ".join(settings["temp_intervals"].keys()))
                     f.close()
                     settings["chosen_intervals"] = []
