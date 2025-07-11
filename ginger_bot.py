@@ -121,8 +121,8 @@ to_letters = types.KeyboardButton("Другая буква")
 # Меню Лесенки
 steps_num = types.KeyboardButton("Количество ступеней")
 # trigger_vol = types.KeyboardButton("Объем первой свечи")
-mean_vol_perc = types.KeyboardButton("Задать процент от среднего")
-min_vol = types.KeyboardButton("Отсечь минимальный объем")
+mean_vol_perc = types.KeyboardButton("Задать процент")
+min_vol = types.KeyboardButton("Отсечь мин. объем")
 # Дополнительное Для Сигналов
 off_signal = types.KeyboardButton("Отключить уведомления")
 on_signal = types.KeyboardButton("Включить уведомления")
@@ -182,15 +182,15 @@ def go_bot(message):
                                  "\n\n"
                                  "### Скачок Объема ###\n Статус: " + 
                                  ("вкл" if settings["volume"] else "выкл") + 
-                                 "\n\n Минимальный скачок: " + str(settings["volume_perc"]) + 
+                                 "\n\n Минимальный скачок: " + str(int(settings["volume_perc"])) + 
                                  "%\n Минимальный объем свечи,\n исходя из установленного дневного \n" + 
-                                 str(settings["volume_vol_cut"]) +"$:\n\n" + "\n".join(vol_cuts)+
+                                 str(int(settings["volume_vol_cut"])) +"$:\n\n" + "\n".join(vol_cuts)+
                                  "\n\n### Лесенка ###\n Статус: " +
                                  ("вкл" if settings["stairs"] else "выкл") + 
                                  "\n\n Кол-во ступеней: " + str(settings["stairs_steps"]) +
-                                 "\n Минимальный скачок\n для первой ступени: " + str(settings["stairs_perc"]) + 
+                                 "\n Минимальный скачок\n для первой ступени: " + str(int(settings["stairs_perc"])) + 
                                  "%\n Минимальный объем первой свечи,\n исходя из установленного дневного \n" + 
-                                 str(settings["stairs_vol_cut"]) +"$:\n\n" + "\n".join(stairs_cuts))
+                                 str(int(settings["stairs_vol_cut"])) +"$:\n\n" + "\n".join(stairs_cuts))
 
                 
 # Меню Настроек
@@ -226,10 +226,11 @@ def go_bot(message):
                     bot.send_message(message.chat.id, text="На клавишах ниже перечень монет, которые я мониторю для тебя сейчас." 
                                     "\nДля редактирования списка выбери монеты из текущего списка или полного перечня инструментов"
                                     "от Bybit, а затем нажми \"Удалить\"/\"Оставить\"/\"Добавить\"."
-                                    "\nМожно очистить список выбранных монет, нажав соответствующую кнопку, или удалить выбранный элемент повторным нажатием."
+                                    "\nМожно очистить список выбранных монет, нажав \"Отменить Выбранное\", или удалить выбранный элемент повторным нажатием на него."
                                     "\nтак же можно ввести символы вручную через запятую. Например \"blablausdt, trallallausdt\"", reply_markup=markup)
-                    bot.send_message(message.chat.id, text="Список длинный. Это его часть. Есть кнопка, чтобы увидеть следующую часть")
-                bot.send_message(message.chat.id, text="!!!ПОСЛЕ РЕДАКТИРОВАНИЯ СПИСКА ИНТЕРВАЛОВ ИЛИ МОНЕТ МОНИТОРИНГ ОСТАНОВИТСЯ. НЕ ЗАБУДЬ ЕГО СНОВА ВКЛЮЧИТЬ!!!")
+                    bot.send_message(message.chat.id, text="Список длинный. Это его часть. Есть кнопка, чтобы увидеть следующую часть списка")
+                if settings["bot_status"] == "on":
+                    bot.send_message(message.chat.id, text="!!!ПОСЛЕ РЕДАКТИРОВАНИЯ СПИСКА ИНТЕРВАЛОВ ИЛИ МОНЕТ МОНИТОРИНГ ОСТАНОВИТСЯ. НЕ ЗАБУДЬ ЕГО СНОВА ВКЛЮЧИТЬ!!!")
                 if settings["chosen_symbols"]:
                     bot.send_message(message.chat.id, text="Сейчас выбрано: " + ", ".join(settings["chosen_symbols"]))
                 
@@ -241,8 +242,9 @@ def go_bot(message):
                 inters = [types.KeyboardButton(x) for x in def_intervals.keys()]
                 markup.add(*inters, ok_btn, back, to_mm)
                 bot.send_message(message.chat.id, text="В данный момент мониторятся:\n" + ",\n".join(settings["temp_intervals"].keys()) + 
-                                "\nЕсли некоторые из них не нужны, выбери интересующие и нажми \"Ok\"", reply_markup=markup)
-                bot.send_message(message.chat.id, text="!!!ПОСЛЕ РЕДАКТИРОВАНИЯ СПИСКА ИНТЕРВАЛОВ ИЛИ МОНЕТ МОНИТОРИНГ ОСТАНОВИТСЯ. НЕ ЗАБУДЬ ЕГО СНОВА ВКЛЮЧИТЬ!!!")
+                                "\Если хочешь это изменить, выбери нужные на кнопках ниже и нажми \"Ok\"", reply_markup=markup)
+                if settings["bot_status"] == "on":
+                    bot.send_message(message.chat.id, text="!!!ПОСЛЕ РЕДАКТИРОВАНИЯ СПИСКА ИНТЕРВАЛОВ ИЛИ МОНЕТ МОНИТОРИНГ ОСТАНОВИТСЯ. НЕ ЗАБУДЬ ЕГО СНОВА ВКЛЮЧИТЬ!!!")
 
 # Меню сигналов
         elif settings["menu_step"] == "signals":
@@ -256,7 +258,12 @@ def go_bot(message):
                     markup.add(*stairs_menu, off_signal, back, to_mm)
                 else:
                     markup.add(*stairs_menu, on_signal, back, to_mm)
-                bot.send_message(message.chat.id, text="В данный момент установлено " + str(settings["stairs_steps"]) + " ступеней.", reply_markup=markup)
+                bot.send_message(message.chat.id, text=
+                                 "В данный момент настройки Лесенки такие: " 
+                                 "\n# Кол-во ступеней: " + str(settings["stairs_steps"]) +
+                                 "\n# Минимальный скачок\n для первой ступени: " + str(int(settings["stairs_perc"])) + 
+                                 "%\n# Минимальный объем первой свечи\n для дневного таймфрейма: \n" + 
+                                 str(int(settings["stairs_vol_cut"])) +"$", reply_markup=markup)
 
   # Скачок объема
             elif message.text == "Скачок объема":
@@ -267,9 +274,11 @@ def go_bot(message):
                     markup.add(*volume_menu, off_signal, back, to_mm)
                 else:
                     markup.add(*volume_menu, on_signal, back, to_mm)
-                bot.send_message(message.chat.id, text=f"На сколько процентов должен вырасти объем текущей свечи относительно среднего,"
-                                    "чтобы я тебе об этом сообщил? \nВыбери значение из тех, что на кнопочках или введи любое от 0.1 до разумных пределов)."
-                                    "\nПо-умолчанию я запраграммирован на 1000%", reply_markup=markup)
+                bot.send_message(message.chat.id, text=
+                                 "В данный момент настройки Скачка Объема такие: " 
+                                 "\n# Минимальный скачок: " + str(settings["volume_perc"]) + 
+                                 "%\n# Минимальный объем свечи\n для дневного таймфрейма: \n" + 
+                                 str(settings["volume_vol_cut"]) +"$", reply_markup=markup)
     
 # Настройки лесенки
         elif settings["menu_step"] == "stairs_settings" and message.text not in ["Назад", "В главное меню"]:
@@ -279,12 +288,12 @@ def go_bot(message):
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
                 markup.add(*stairs_menu, on_signal, back, to_mm)
                 settings["stairs"] = False
-                bot.send_message(message.chat.id, text="Сигнал Лесенка отключен.", reply_markup=markup)
+                bot.send_message(message.chat.id, text="Сигнал отключен.", reply_markup=markup)
             elif message.text == "Включить уведомления":
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
                 markup.add(*stairs_menu, off_signal, back, to_mm)
                 settings["stairs"] = True
-                bot.send_message(message.chat.id, text="Сигнал Лесенка по среднему объему включен.", reply_markup=markup)
+                bot.send_message(message.chat.id, text="Сигнал включен.", reply_markup=markup)
 
   # Ступени 
             elif message.text == "Количество ступеней":
@@ -293,28 +302,31 @@ def go_bot(message):
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
                 btns = [types.KeyboardButton(x) for x in stairs_steps]
                 markup.add(*btns, back)
-                bot.send_message(message.chat.id, text="Выбери количество ступеней из значений на кнопочках ниже "
-                                "или введи любое от 1 до разумных пределов)."
+                bot.send_message(message.chat.id, text="Выбирай"
                                 "\nВ данный момент установлено " + 
                                 str(settings["stairs_steps"]) + ".", reply_markup=markup)
                 
   # Процент превышения среднего объема
-            elif message.text == "Задать процент от среднего":
+            elif message.text == "Задать процент":
                 print("Нажал \"Задать процент от среднего\"")
                 settings["menu_step"] = "stairs_perc_enter"
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(back)
                 bot.send_message(message.chat.id, 
-                                text="Введи процент превышения среднего объема, после которого я буду начинать мониторить лестницы", 
+                                text=
+                                "Введи количество процентов, на которое объем первой ступени лесенки должен превышать средний за предыдущие 14 свечей" +
+                                "\nСейчас установлено: " + str(int(settings["stairs_perc"])) + "%", 
                                 reply_markup=markup)
   # Фиксированный объем
-            elif message.text == "Отсечь минимальный объем":
+            elif message.text == "Отсечь мин. объем":
                 print("Нажал \"Отсечь минимальный объем\"")
                 settings["menu_step"] = "stairs_vol_cut_enter"
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(back)
                 bot.send_message(message.chat.id, 
-                                text="Введи объем торгов за день, выше которого я буду начинать мониторить лестницы. Для остальных таймфреймов он будет расчитан автоматически", 
+                                text=
+                                "Введи объем торгов за день, выше которого я буду начинать мониторить лестницы. Для остальных таймфреймов он будет расчитан автоматически" +
+                                "Сейчас установлено:" + str(int(settings["stairs_vol_cut"])) +"$", 
                                 reply_markup=markup)
                 
 # Настройка количества ступеней
@@ -323,7 +335,7 @@ def go_bot(message):
                 try:
                     if 2 <= int(message.text) <=10:
                             settings["stairs_steps"] = int(message.text)
-                            bot.send_message(message.chat.id, text=f"Целевое значение кол-ва ступеней для Лесенки с фиксированным объемом изменено на {message.text}.")
+                            bot.send_message(message.chat.id, text=f"Целевое значение кол-ва ступеней изменено на {message.text}.")
                             if not settings["stairs"]:
                                 bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
                     else:
@@ -336,7 +348,7 @@ def go_bot(message):
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["stairs_perc"] = float(message.text)
-                    bot.send_message(message.chat.id, text=f"Целевое значение процента превышения среднего объема для первой свечи Лесенки изменено на {message.text}.")
+                    bot.send_message(message.chat.id, text=f"Целевое значение процента превышения среднего объема для первой ступени изменено на {message.text}.")
                     if not settings["stairs"]:
                         bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
                 except:
@@ -347,7 +359,7 @@ def go_bot(message):
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["stairs_vol_cut"] = float(message.text.replace(",", "."))
-                    bot.send_message(message.chat.id, text=f"Отсекли лесенки первая ступень которых не превышает {message.text}.")
+                    bot.send_message(message.chat.id, text=f"целевое значение минимального объема первой ступени изменено на {message.text}.")
                     if not settings["stairs"]:
                         bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
                 except:
@@ -361,30 +373,31 @@ def go_bot(message):
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(*volume_menu, on_signal, back, to_mm)
                 settings["volume"] = False
-                bot.send_message(message.chat.id, text="Сигнал Скачок Объема отключен.", reply_markup=markup)
+                bot.send_message(message.chat.id, text="Сигнал отключен.", reply_markup=markup)
             elif message.text == "Включить уведомления":
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(*volume_menu, off_signal, back, to_mm)
                 settings["volume"] = True
-                bot.send_message(message.chat.id, text="Сигнал Скачок Объема включен.", reply_markup=markup)
+                bot.send_message(message.chat.id, text="Сигнал включен.", reply_markup=markup)
             
   # Процент превышения среднего объема
-            elif message.text == "Задать процент от среднего":
+            elif message.text == "Задать процент":
                 print("Нажал \"Задать процент от среднего\"")
                 settings["menu_step"] = "volume_perc_enter"
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(back)
                 bot.send_message(message.chat.id, 
-                                text="Введи процент превышения среднего объема, после которого я буду ", 
+                                text="Введи процент превышения среднего объема", 
                                 reply_markup=markup)
   # Фиксированный объем
-            elif message.text == "Отсечь минимальный объем":
+            elif message.text == "Отсечь мин. объем":
                 print("Нажал \"Отсечь минимальный объем\"")
                 settings["menu_step"] = "volume_vol_cut_enter"
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(back)
                 bot.send_message(message.chat.id, 
-                                text="Введи объем торгов за день, выше которого я буду начинать мониторить объм. Для остальных таймфреймов он будет расчитан автоматически", 
+                                text="Введи минимальный объем свечи в баксах для дневного таймфрейма, для остальных таймфреймов он будет расчитан автоматически:" +
+                                "Скачки с меньшим оъемом будут игнорироваться", 
                                 reply_markup=markup)
                 
 # Настройка процента превышения среднего
@@ -392,7 +405,7 @@ def go_bot(message):
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["volume_perc"] = float(message.text)
-                    bot.send_message(message.chat.id, text=f"Целевое значение процента превышения среднего для Скачка объема {message.text}.")
+                    bot.send_message(message.chat.id, text=f"Целевое значение процента превышения среднего изменено на {message.text}.")
                     if not settings["volume"]:
                         bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
                 except:
@@ -538,7 +551,7 @@ def go_bot(message):
                 settings["chosen_symbols"] = []
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(*settings_menu)
-                bot.send_message(message.chat.id, text="Добавил все, что есть на байбит. Когда я буду тупить, знай, это не я туплю, это ты тупишь))) ", reply_markup=markup)
+                bot.send_message(message.chat.id, text="Добавил все, что есть на байбит. Возможно буду подтормаживать", reply_markup=markup)
                 if settings["bot_status"] in ["on", "wait"]:
                     bot.send_message(message.chat.id, text="Настройки вступят в силу, когда бот закончит текущий цикл запросов к Bybit")
                     settings["bot_status"] = "wait"
@@ -681,7 +694,7 @@ def go_bot(message):
                 settings["menu_step"] = "stairs_settings"
 
             elif settings["menu_step"] in ["volume_vol_cut_enter", "volume_perc_enter" ]:
-                markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+                markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 if settings["volume"] == True:
                     markup.add(*volume_menu, off_signal, back, to_mm)
                 else:
