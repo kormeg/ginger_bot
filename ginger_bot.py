@@ -93,8 +93,28 @@ else:
     settings["intervals"] = {k:v for k, v in def_intervals.items() if k in ["1 час", "День"]}
     settings["temp_intervals"] = {k:v for k, v in def_intervals.items() if k in ["1 час", "День"]}
 
+try:
+    f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","r")
+except:
+    f = open("C:/ginger_bot/stairs_settings.txt","r")
+stairs_settings = [x for x in f.read().split(", ") if x not in ["", " "]]
+f.close()
+if stairs_settings:
+    settings["stairs"] = bool(stairs_settings[0])
+    settings["stairs_steps"] = float(stairs_settings[1])
+    settings["stairs_perc"] = float(stairs_settings[2])
+    settings["stairs_vol_cut"] = float(stairs_settings[3])
 
-
+try:
+    f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","r")
+except:
+    f = open("C:/ginger_bot/volume_settings.txt","r")
+volume_settings = [x for x in f.read().split(", ") if x not in ["", " "]]
+f.close()
+if volume_settings:
+    settings["volume"] = bool(volume_settings[0])
+    settings["volume_perc"] = float(volume_settings[1])
+    settings["volume_vol_cut"] = float(volume_settings[2])
 
 
 # Главное Меню
@@ -187,7 +207,7 @@ def go_bot(message):
                                  str(int(settings["volume_vol_cut"])) +"$:\n\n" + "\n".join(vol_cuts)+
                                  "\n\n### Лесенка ###\n Статус: " +
                                  ("вкл" if settings["stairs"] else "выкл") + 
-                                 "\n\n Кол-во ступеней: " + str(settings["stairs_steps"]) +
+                                 "\n\n Кол-во ступеней: " + str(int(settings["stairs_steps"])) +
                                  "\n Минимальный скачок\n для первой ступени: " + str(int(settings["stairs_perc"])) + 
                                  "%\n Минимальный объем первой свечи,\n исходя из установленного дневного \n" + 
                                  str(int(settings["stairs_vol_cut"])) +"$:\n\n" + "\n".join(stairs_cuts))
@@ -288,11 +308,26 @@ def go_bot(message):
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
                 markup.add(*stairs_menu, on_signal, back, to_mm)
                 settings["stairs"] = False
+                write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
+                try:
+                    f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
+                except:
+                    f = open("C:/ginger_bot/stairs_settings.txt","w")
+                f.write(", ".join(str(x) for x in write_list))
+                f.close()
                 bot.send_message(message.chat.id, text="Сигнал отключен.", reply_markup=markup)
+
             elif message.text == "Включить уведомления":
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
                 markup.add(*stairs_menu, off_signal, back, to_mm)
                 settings["stairs"] = True
+                write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
+                try:
+                    f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
+                except:
+                    f = open("C:/ginger_bot/stairs_settings.txt","w")
+                f.write(", ".join(str(x) for x in write_list))
+                f.close()
                 bot.send_message(message.chat.id, text="Сигнал включен.", reply_markup=markup)
 
   # Ступени 
@@ -317,7 +352,7 @@ def go_bot(message):
                                 "Введи количество процентов, на которое объем первой ступени лесенки должен превышать средний за предыдущие 14 свечей" +
                                 "\nСейчас установлено: " + str(int(settings["stairs_perc"])) + "%", 
                                 reply_markup=markup)
-  # Фиксированный объем
+  # Отсечение объема
             elif message.text == "Отсечь мин. объем":
                 print("Нажал \"Отсечь минимальный объем\"")
                 settings["menu_step"] = "stairs_vol_cut_enter"
@@ -329,12 +364,19 @@ def go_bot(message):
                                 "Сейчас установлено:" + str(int(settings["stairs_vol_cut"])) +"$", 
                                 reply_markup=markup)
                 
-# Настройка количества ступеней
+ # Настройка количества ступеней
         elif settings["menu_step"] == "stairs_steps":
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     if 2 <= int(message.text) <=10:
                             settings["stairs_steps"] = int(message.text)
+                            write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
+                            try:
+                                f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
+                            except:
+                                f = open("C:/ginger_bot/stairs_settings.txt","w")
+                            f.write(", ".join(str(x) for x in write_list))
+                            f.close()
                             bot.send_message(message.chat.id, text=f"Целевое значение кол-ва ступеней изменено на {message.text}.")
                             if not settings["stairs"]:
                                 bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
@@ -343,23 +385,37 @@ def go_bot(message):
                 except:
                     bot.send_message(message.chat.id, text="Это некорректное значение. Настройки не изменились")
 
-# Настройка процента превышения среднего
+ # Настройка процента превышения среднего
         elif settings["menu_step"] == "stairs_perc_enter":
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["stairs_perc"] = float(message.text)
+                    write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
+                    try:
+                        f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
+                    except:
+                        f = open("C:/ginger_bot/stairs_settings.txt","w")
+                    f.write(", ".join(str(x) for x in write_list))
+                    f.close()
                     bot.send_message(message.chat.id, text=f"Целевое значение процента превышения среднего объема для первой ступени изменено на {message.text}.")
                     if not settings["stairs"]:
                         bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
                 except:
                     bot.send_message(message.chat.id, text="Это некорректное значение. Настройки не изменились")   
 
-# Настройка фиксированного объема
+ # Настройка отсечения объема
         elif settings["menu_step"] == "stairs_vol_cut_enter":
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["stairs_vol_cut"] = float(message.text.replace(",", "."))
                     bot.send_message(message.chat.id, text=f"целевое значение минимального объема первой ступени изменено на {message.text}.")
+                    write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
+                    try:
+                        f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
+                    except:
+                        f = open("C:/ginger_bot/stairs_settings.txt","w")
+                    f.write(", ".join(str(x) for x in write_list))
+                    f.close()
                     if not settings["stairs"]:
                         bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
                 except:
@@ -373,11 +429,25 @@ def go_bot(message):
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(*volume_menu, on_signal, back, to_mm)
                 settings["volume"] = False
+                write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
+                try:
+                    f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","w")
+                except:
+                    f = open("C:/ginger_bot/volume_settings.txt","w")
+                f.write(", ".join(str(x) for x in write_list))
+                f.close()
                 bot.send_message(message.chat.id, text="Сигнал отключен.", reply_markup=markup)
             elif message.text == "Включить уведомления":
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
                 markup.add(*volume_menu, off_signal, back, to_mm)
                 settings["volume"] = True
+                write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
+                try:
+                    f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","w")
+                except:
+                    f = open("C:/ginger_bot/volume_settings.txt","w")
+                f.write(", ".join(str(x) for x in write_list))
+                f.close()
                 bot.send_message(message.chat.id, text="Сигнал включен.", reply_markup=markup)
             
   # Процент превышения среднего объема
@@ -389,7 +459,7 @@ def go_bot(message):
                 bot.send_message(message.chat.id, 
                                 text="Введи процент превышения среднего объема", 
                                 reply_markup=markup)
-  # Фиксированный объем
+  # Отсечение объема
             elif message.text == "Отсечь мин. объем":
                 print("Нажал \"Отсечь минимальный объем\"")
                 settings["menu_step"] = "volume_vol_cut_enter"
@@ -405,24 +475,36 @@ def go_bot(message):
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["volume_perc"] = float(message.text)
+                    write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
+                    try:
+                        f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","w")
+                    except:
+                        f = open("C:/ginger_bot/volume_settings.txt","w")
+                    f.write(", ".join(str(x) for x in write_list))
+                    f.close()
                     bot.send_message(message.chat.id, text=f"Целевое значение процента превышения среднего изменено на {message.text}.")
                     if not settings["volume"]:
                         bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
                 except:
                     bot.send_message(message.chat.id, text="Это некорректное значение. Настройки не изменились")   
 
-# Настройка фиксированного объема
+# Настройка отсечения объема
         elif settings["menu_step"] == "volume_vol_cut_enter":
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["volume_vol_cut"] = float(message.text.replace(",", "."))
+                    write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
+                    try:
+                        f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","w")
+                    except:
+                        f = open("C:/ginger_bot/volume_settings.txt","w")
+                    f.write(", ".join(str(x) for x in write_list))
+                    f.close()
                     bot.send_message(message.chat.id, text=f"Отсекли лесенки первая ступень которых не превышает {message.text}.")
                     if not settings["volume"]:
                         bot.send_message(message.chat.id, text="Однако на данный момент сигнал отключен, если хочешь, получать уведомления, включи их в настройках")
                 except:
                     bot.send_message(message.chat.id, text="Это некорректное значение. Настройки не изменились")     
-
-# Настройки роста открытого интереса
 
 # Меню монет
         elif settings["menu_step"] in ["coins", "letters"]:
@@ -678,7 +760,7 @@ def go_bot(message):
                 bot.send_message(message.chat.id, text="Вернулись в твои монеты.", reply_markup=markup)
                 settings["menu_step"] = "coins"
 
-            elif settings["menu_step"] in ["stairs_settings", "breakdown_settings", "volume_settings", "oi_settings"]:
+            elif settings["menu_step"] in ["stairs_settings", "volume_settings"]:
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
                 markup.add(*signals_menu)
                 bot.send_message(message.chat.id, text="Вернулись к выбору сигналов", reply_markup=markup)
@@ -700,7 +782,7 @@ def go_bot(message):
                 else:
                     markup.add(*volume_menu, on_signal, back, to_mm)
                 bot.send_message(message.chat.id, text="Вернулись в настройки Скачка Объема", reply_markup=markup)
-                settings["menu_step"] = "stairs_settings"
+                settings["menu_step"] = "volume_settings"
 
 # В главное меню
         if message.text == "В главное меню":

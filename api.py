@@ -298,20 +298,6 @@ class API():
             pass
             # time.sleep(5)
 
-
-    # def go_test(self, symbols, intervals, limit=200, last_closed=False, volume=False, moscow=True, time_to_ind=True, pf=None, 
-    #                  set_pf=False, start=None, end=None, collect=False, control=True):
-    #     self.get_data(symbols, intervals, limit, last_closed, volume, moscow, time_to_ind, pf, set_pf, start, end)
-    #     while True:
-    #         self.update_data( limit=2, collect=collect, control=control)
-    #         time.sleep(3)
-
-
-    # def get_history(self, symbols, intervals, start, end=None, limit=1000, last_closed=False, volume=False, moscow=True, time_to_ind=True, direction="decrease", 
-    #              pf=None, set_pf=False):
-        
-    #     pass
-
     
     
     def create_order(self, symbol, side, qty, price, stop_loss, take_profit):
@@ -359,67 +345,5 @@ class API():
             except:
                 time.sleep(1)
 
-
-
-
-
-
-# cl = API("demo_api")
-# cl.go_test(["BTCUSDT"], 5, volume=True)
-# sl = cl.get_symbol_list()
-# print(len(sl))
-# print(sl)
-# cl.get_data([SYMBOL], [INTERVAL])
-# df = cl.data[SYMBOL][INTERVAL]["data"]
-# display(df.head())
-# print()
-# pp = inds.fractals(df, 2)
-# display(pp.head())
-# print()
-# fr = inds.key_fractals(pp)
-# display(fr.head())
-# print()
-# imb = inds.get_imbalance(df)
-# display(imb.head())
-# print()
-# # print(cl.__dict__)
-
-
-
-# for i in cl.data:
-#     df = cl.data[i][1]["data"]
-#     print(df.head())
-#     df["5m_time"] = df[df["time"].dt.minute%5==0]["time"]
-#     df["5m_time"] = df["5m_time"].fillna(method="bfill")
-#     df["15m_time"] = df[df["time"].dt.minute%15==0]["time"]
-#     df["15m_time"] = df["15m_time"].fillna(method="bfill")
-#     vol5 = df.groupby("5m_time").agg(
-#         {
-#             "open" : "last",
-#             "high" : "max",    
-#             "low" : "min",
-#             "close" : "first",
-#             "volume" : "sum"
-            
-#         }
-#     ).iloc[::-1]
-
-#     vol15 = df.groupby("15m_time").agg(
-#         {
-#             "open" : "last",
-#             "high" : "max",
-#             "low" : "min",
-#             "close" : "first",
-#             "volume" : "sum"
-            
-#         }
-#     ).iloc[::-1]
-#     print(vol5.head())
-#     print(vol15.head())
-
-
-
-# cl.create_order(SYMBOL, SIDE, QTY, str(cl.data[SYMBOL][INTERVAL]["data"]["close"][0]- 0.000020), str(cl.data[SYMBOL][INTERVAL]["data"]["close"][0] - 0.000050), str(cl.data[SYMBOL][INTERVAL]["data"]["close"][0] + 0.000010))
-# print("Done")
 
 
