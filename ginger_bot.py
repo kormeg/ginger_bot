@@ -882,4 +882,5 @@ def go_bot(message):
                 time.sleep(5)
 
 # bot.polling(none_stop=True)
+bot.remove_webhook()
 bot.infinity_polling()
