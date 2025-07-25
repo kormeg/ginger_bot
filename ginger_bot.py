@@ -22,6 +22,7 @@ from telebot import types
 
 
 TOKEN = "8158212209:AAGYHNwv5wUOi5NmKmIDnyD1fnK_d3hJmMk"
+# TOKEN = "7824128266:AAEzbktsauCG_M64TVJuEFEx5l13JYiVtvg"
 MEAN_LENGTH = 15
 LIMIT = 24
 
@@ -101,9 +102,9 @@ stairs_settings = [x for x in f.read().split(", ") if x not in ["", " "]]
 f.close()
 if stairs_settings:
     settings["stairs"] = bool(stairs_settings[0])
-    settings["stairs_steps"] = float(stairs_settings[1])
-    settings["stairs_perc"] = float(stairs_settings[2])
-    settings["stairs_vol_cut"] = float(stairs_settings[3])
+    settings["stairs_steps"] = int(float(stairs_settings[1]))
+    settings["stairs_perc"] = int(float(stairs_settings[2]))
+    settings["stairs_vol_cut"] = int(float(stairs_settings[3]))
 
 try:
     f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","r")
@@ -113,8 +114,8 @@ volume_settings = [x for x in f.read().split(", ") if x not in ["", " "]]
 f.close()
 if volume_settings:
     settings["volume"] = bool(volume_settings[0])
-    settings["volume_perc"] = float(volume_settings[1])
-    settings["volume_vol_cut"] = float(volume_settings[2])
+    settings["volume_perc"] = int(float(volume_settings[1]))
+    settings["volume_vol_cut"] = int(float(volume_settings[2]))
 
 
 # Главное Меню
@@ -202,13 +203,13 @@ def go_bot(message):
                                  "\n\n"
                                  "### Скачок Объема ###\n Статус: " + 
                                  ("вкл" if settings["volume"] else "выкл") + 
-                                 "\n\n Минимальный скачок: " + str(int(settings["volume_perc"])) + 
+                                 "\n\n Минимальный скачок: " + str(settings["volume_perc"]) + 
                                  "%\n Минимальный объем свечи,\n исходя из установленного дневного \n" + 
                                  str(int(settings["volume_vol_cut"])) +"$:\n\n" + "\n".join(vol_cuts)+
                                  "\n\n### Лесенка ###\n Статус: " +
                                  ("вкл" if settings["stairs"] else "выкл") + 
-                                 "\n\n Кол-во ступеней: " + str(int(settings["stairs_steps"])) +
-                                 "\n Минимальный скачок\n для первой ступени: " + str(int(settings["stairs_perc"])) + 
+                                 "\n\n Кол-во ступеней: " + str(settings["stairs_steps"]) +
+                                 "\n Минимальный скачок\n для первой ступени: " + str(settings["stairs_perc"]) + 
                                  "%\n Минимальный объем первой свечи,\n исходя из установленного дневного \n" + 
                                  str(int(settings["stairs_vol_cut"])) +"$:\n\n" + "\n".join(stairs_cuts))
 
@@ -650,7 +651,7 @@ def go_bot(message):
                 settings["menu_step"] = "letters"
 
 # разбор набранного с клавиатуры на символы
-            elif settings["menu_step"] == "coins" and message.text not in ["Назад", "В главное меню"]:
+            elif settings["menu_step"] == "coins" and message.text not in ["Назад", "В главное меню", "Следующие", "Предыдущие"]:
                 symbs = [x.strip(" ,") for x in message.text.upper().split(",") if x not in ["" , " "]]
                 for symb in symbs:
                     if symb in settings["bybit_symbols"]:
@@ -717,9 +718,9 @@ def go_bot(message):
                 if settings["chosen_intervals"]:
                     settings["temp_intervals"] = {k:v for k,v in def_intervals.items() if k in settings["chosen_intervals"]}
                     try:
-                        f = open("D:/code/python/projects/trading/serious_bot/telegram/last_intervals.txt","w")
+                        f = open("D:/code/python/projects/trading/ginger_bot/last_intervals.txt","w")
                     except:
-                            f = open("C:/ginger_bot/last_intervals.txt","w")
+                        f = open("C:/ginger_bot/last_intervals.txt","w")
                     f.write(", ".join(settings["temp_intervals"].keys()))
                     f.close()
                     settings["chosen_intervals"] = []
