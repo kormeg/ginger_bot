@@ -1,8 +1,7 @@
-# import sys
-# # sys.path.append("D:/code/python/projects/trading/serious_bot")
+import os
+import sys
 import pkg_resources
 import subprocess
-import sys
 import datetime as dt
 import time
 import asyncio
@@ -19,41 +18,51 @@ for m in modules:
 import telebot
 from telebot import types
 
+# подключение к телеге
+try:
+    f = open("../config/token.txt", "r")
+    TOKEN = f.read()
+    print()
+    f.close()    
+except:
+    TOKEN = input("\nЭто первый запуск бота после скачивания репозитория. Введи токен\n")
+    try:
+        os.mkdir("../config")
+    except:
+        pass
+    f = open("../config/token.txt", "w")
+    f.write(TOKEN)
+    f.close()
 
+while True:
+    try:
+        bot = telebot.TeleBot(TOKEN)
+        bot.remove_webhook()
+    except:
+        TOKEN = input("\nТокен не работает. Давай другой\n")
+        f = open("../config/token.txt", "w")
+        f.write(TOKEN)
+        f.close()
 
-TOKEN = "8158212209:AAGYHNwv5wUOi5NmKmIDnyD1fnK_d3hJmMk"
+    else:
+        break
 
+# подключение к bybit
+cl = api.API("demo_api")
+bbs = cl.get_symbol_list()
+
+# константы и настройки
 MEAN_LENGTH = 15
 LIMIT = 24
-
-bot = telebot.TeleBot(TOKEN)
-bot.remove_webhook()
-cl = api.API("demo_api")
-
 stairs_steps = [2, 3, 4, 5, 6, 7, 8, 9, 10]
-breakdown_percs = [5, 10, 20, 30, 40, 50]
-volume_percs = [1000, 2000, 3000, 4000, 5000]
-oi_percs = [5, 10, 20, 30, 40, 50]
-
-bbs = cl.get_symbol_list()
-try:
-    f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","r")
-except:
-    f = open("C:/ginger_bot/last_symbols.txt","r")
-last_symbols = [x for x in f.read().split(", ") if x in bbs]
-f.close()
-
-if last_symbols:
-    def_symbols = last_symbols
-else:
-    def_symbols = ["BTCUSDT"]
-
-def_intervals = {"5 минут" : 5,
-                 "15 минут" : 15,
-                 "1 час" : 60,
-                 "2 часа" : 120,
-                 "4 часа" : 240, 
-                 "День" : "D"}
+def_intervals = {
+    "5 минут" : 5,
+    "15 минут" : 15,
+    "1 час" : 60,
+    "2 часа" : 120,
+    "4 часа" : 240, 
+    "День" : "D"
+    }
 
 settings = {
     "menu_step" : "main_menu",
@@ -63,60 +72,79 @@ settings = {
     "stairs_perc" : 400,
     "stairs_vol_cut" : 10000000,
 
-    "breakdown" : False,
-    "breakdown_perc" : 10,
-
     "volume" : True, 
     "volume_perc" : 5000,
     "volume_vol_cut" :10000000,
 
-    "oi" : False,
-    "oi_perc" : 10,
-
-    "symbols" : def_symbols,
-    "temp_symbols" : def_symbols,
+    "symbols" : ["BTCUSDT"],
+    "temp_symbols" : ["BTCUSDT"],
     "chosen_symbols" : [],
 
-    # "intervals" : {k:v for k, v in def_intervals.items() if k in ["1 час", "День"]},
-    # "temp_intervals" : {k:v for k, v in def_intervals.items() if k in ["1 час", "День"]},
-    "chosen_intervals" :[],
+    "intervals" : {k:v for k, v in def_intervals.items() if k in ["1 час", "День"]},
+    "temp_intervals" : {k:v for k, v in def_intervals.items() if k in ["1 час", "День"]},
+    "chosen_intervals" : []
+    }
+
+try:
+    f = open("../config/last_symbols.txt", "r")
+    last_symbols = [x for x in f.read().split(", ") if x in bbs]
+    f.close()
+    if last_symbols:
+        settings["symbols"] = last_symbols
+        settings["temp_symbols"] = last_symbols
+except:
+    f = open("../config/last_symbols.txt", "w")
+    f.write(" ,".join(settings["temp_symbols"]))
+    f.close()
+
+
+try:
+    f = open("../config/last_intervals.txt", "r")
+    last_intervals = [x for x in f.read().split(", ") if x in def_intervals.keys()]
+    f.close()
+    if last_intervals:
+        settings["intervals"] = {k:v for k, v in def_intervals.items() if k in last_intervals}
+        settings["temp_intervals"] = {k:v for k, v in def_intervals.items() if k in last_intervals}
+except:
+    f = open("../config/last_intervals.txt", "w")
+    f.write(", ".join(settings["temp_intervals"].keys()))
+    f.close()
+
+
+
+try:
+    f = open("../config/stairs_settings.txt", "r")
+    stairs_settings = [x for x in f.read().split(", ") if x not in ["", " "]]
+    f.close()
+    if len(stairs_settings) == 4:
+        settings["stairs"] = False if stairs_settings[0]=="False" else True
+        settings["stairs_steps"] = int(float(stairs_settings[1]))
+        settings["stairs_perc"] = int(float(stairs_settings[2]))
+        settings["stairs_vol_cut"] = int(float(stairs_settings[3]))
+except:
+    f = open("../config/stairs_settings.txt", "w")
+    write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
+    f.write(", ".join(str(x) for x in write_list))
+    f.close()
+
     
-}
-try:
-    f = open("D:/code/python/projects/trading/ginger_bot/last_intervals.txt","r")
-except:
-    f = open("C:/ginger_bot/last_intervals.txt","r")
-last_intervals = [x for x in f.read().split(", ") if x in def_intervals.keys()]
-f.close()
-if last_intervals:
-    settings["intervals"] = {k:v for k, v in def_intervals.items() if k in last_intervals}
-    settings["temp_intervals"] = {k:v for k, v in def_intervals.items() if k in last_intervals}
-else:
-    settings["intervals"] = {k:v for k, v in def_intervals.items() if k in ["1 час", "День"]}
-    settings["temp_intervals"] = {k:v for k, v in def_intervals.items() if k in ["1 час", "День"]}
 
 try:
-    f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","r")
+    f = open("../config/volume_settings.txt", "r")
+    volume_settings = [x for x in f.read().split(", ") if x not in ["", " "]]
+    # print(volume_settings)
+    # print(settings)
+    f.close()
+    if len(volume_settings) == 3:
+        settings["volume"] = False if volume_settings[0]=="False" else True
+        settings["volume_perc"] = int(float(volume_settings[1]))
+        settings["volume_vol_cut"] = int(float(volume_settings[2]))
 except:
-    f = open("C:/ginger_bot/stairs_settings.txt","r")
-stairs_settings = [x for x in f.read().split(", ") if x not in ["", " "]]
-f.close()
-if stairs_settings:
-    settings["stairs"] = bool(stairs_settings[0])
-    settings["stairs_steps"] = int(float(stairs_settings[1]))
-    settings["stairs_perc"] = int(float(stairs_settings[2]))
-    settings["stairs_vol_cut"] = int(float(stairs_settings[3]))
-
-try:
-    f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","r")
-except:
-    f = open("C:/ginger_bot/volume_settings.txt","r")
-volume_settings = [x for x in f.read().split(", ") if x not in ["", " "]]
-f.close()
-if volume_settings:
-    settings["volume"] = bool(volume_settings[0])
-    settings["volume_perc"] = int(float(volume_settings[1]))
-    settings["volume_vol_cut"] = int(float(volume_settings[2]))
+    f = open("../config/volume_settings.txt", "w")
+    write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
+    f.write(", ".join(str(x) for x in write_list))
+    f.close()
+    
 
 
 # Главное Меню
@@ -311,10 +339,7 @@ def go_bot(message):
                 markup.add(*stairs_menu, on_signal, back, to_mm)
                 settings["stairs"] = False
                 write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
-                try:
-                    f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
-                except:
-                    f = open("C:/ginger_bot/stairs_settings.txt","w")
+                f = open("../config/stairs_settings.txt","w")
                 f.write(", ".join(str(x) for x in write_list))
                 f.close()
                 bot.send_message(message.chat.id, text="Сигнал отключен.", reply_markup=markup)
@@ -324,10 +349,7 @@ def go_bot(message):
                 markup.add(*stairs_menu, off_signal, back, to_mm)
                 settings["stairs"] = True
                 write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
-                try:
-                    f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
-                except:
-                    f = open("C:/ginger_bot/stairs_settings.txt","w")
+                f = open("../config/stairs_settings.txt","w")
                 f.write(", ".join(str(x) for x in write_list))
                 f.close()
                 bot.send_message(message.chat.id, text="Сигнал включен.", reply_markup=markup)
@@ -366,17 +388,14 @@ def go_bot(message):
                                 "Сейчас установлено:" + str(int(settings["stairs_vol_cut"])) +"$", 
                                 reply_markup=markup)
                 
- # Настройка количества ступеней
+  # Настройка количества ступеней
         elif settings["menu_step"] == "stairs_steps":
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     if 2 <= int(message.text) <=10:
                             settings["stairs_steps"] = int(message.text)
                             write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
-                            try:
-                                f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
-                            except:
-                                f = open("C:/ginger_bot/stairs_settings.txt","w")
+                            f = open("../config/stairs_settings.txt","w")
                             f.write(", ".join(str(x) for x in write_list))
                             f.close()
                             bot.send_message(message.chat.id, text=f"Целевое значение кол-ва ступеней изменено на {message.text}.")
@@ -387,16 +406,13 @@ def go_bot(message):
                 except:
                     bot.send_message(message.chat.id, text="Это некорректное значение. Настройки не изменились")
 
- # Настройка процента превышения среднего
+  # Настройка процента превышения среднего
         elif settings["menu_step"] == "stairs_perc_enter":
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["stairs_perc"] = float(message.text)
                     write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
-                    try:
-                        f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
-                    except:
-                        f = open("C:/ginger_bot/stairs_settings.txt","w")
+                    f = open("../config/stairs_settings.txt","w")
                     f.write(", ".join(str(x) for x in write_list))
                     f.close()
                     bot.send_message(message.chat.id, text=f"Целевое значение процента превышения среднего объема для первой ступени изменено на {message.text}.")
@@ -405,17 +421,14 @@ def go_bot(message):
                 except:
                     bot.send_message(message.chat.id, text="Это некорректное значение. Настройки не изменились")   
 
- # Настройка отсечения объема
+  # Настройка отсечения объема
         elif settings["menu_step"] == "stairs_vol_cut_enter":
             if message.text not in ["Назад", "В главное меню"]:
                 try:
                     settings["stairs_vol_cut"] = float(message.text.replace(",", "."))
                     bot.send_message(message.chat.id, text=f"целевое значение минимального объема первой ступени изменено на {message.text}.")
                     write_list = [settings["stairs"], settings["stairs_steps"], settings["stairs_perc"], settings["stairs_vol_cut"]]
-                    try:
-                        f = open("D:/code/python/projects/trading/ginger_bot/stairs_settings.txt","w")
-                    except:
-                        f = open("C:/ginger_bot/stairs_settings.txt","w")
+                    f = open("../config/stairs_settings.txt","w")
                     f.write(", ".join(str(x) for x in write_list))
                     f.close()
                     if not settings["stairs"]:
@@ -432,10 +445,7 @@ def go_bot(message):
                 markup.add(*volume_menu, on_signal, back, to_mm)
                 settings["volume"] = False
                 write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
-                try:
-                    f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","w")
-                except:
-                    f = open("C:/ginger_bot/volume_settings.txt","w")
+                f = open("../config/volume_settings.txt","w")
                 f.write(", ".join(str(x) for x in write_list))
                 f.close()
                 bot.send_message(message.chat.id, text="Сигнал отключен.", reply_markup=markup)
@@ -444,10 +454,7 @@ def go_bot(message):
                 markup.add(*volume_menu, off_signal, back, to_mm)
                 settings["volume"] = True
                 write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
-                try:
-                    f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","w")
-                except:
-                    f = open("C:/ginger_bot/volume_settings.txt","w")
+                f = open("../config/volume_settings.txt","w")
                 f.write(", ".join(str(x) for x in write_list))
                 f.close()
                 bot.send_message(message.chat.id, text="Сигнал включен.", reply_markup=markup)
@@ -478,10 +485,7 @@ def go_bot(message):
                 try:
                     settings["volume_perc"] = float(message.text)
                     write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
-                    try:
-                        f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","w")
-                    except:
-                        f = open("C:/ginger_bot/volume_settings.txt","w")
+                    f = open("../config/volume_settings.txt","w")
                     f.write(", ".join(str(x) for x in write_list))
                     f.close()
                     bot.send_message(message.chat.id, text=f"Целевое значение процента превышения среднего изменено на {message.text}.")
@@ -496,10 +500,7 @@ def go_bot(message):
                 try:
                     settings["volume_vol_cut"] = float(message.text.replace(",", "."))
                     write_list = [settings["volume"], settings["volume_perc"], settings["volume_vol_cut"]]
-                    try:
-                        f = open("D:/code/python/projects/trading/ginger_bot/volume_settings.txt","w")
-                    except:
-                        f = open("C:/ginger_bot/volume_settings.txt","w")
+                    f = open("../config/volume_settings.txt","w")
                     f.write(", ".join(str(x) for x in write_list))
                     f.close()
                     bot.send_message(message.chat.id, text=f"Отсекли лесенки первая ступень которых не превышает {message.text}.")
@@ -535,30 +536,30 @@ def go_bot(message):
             elif message.text == "Удалить":
                 settings["menu_step"] = "coins"
                 if settings["chosen_symbols"]:
-                    deleted = [x for x in settings["temp_symbols"] if x in settings["chosen_symbols"]]
-                    if deleted:
-                        settings["temp_symbols"] = [x for x in settings["temp_symbols"] if x not in settings["chosen_symbols"]]
-                        try:
-                            f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
-                        except:
-                            f = open("C:/ginger_bot/last_symbols.txt","w")
-                        f.write(", ".join(settings["temp_symbols"]))
-                        f.close()
-                        settings["chosen_symbols"] = []
-                        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
-                        symbols = [types.KeyboardButton(x) for x in settings["temp_symbols"][:100]]
-                        if len(settings["temp_symbols"]) > 100:
-                            settings["symbs_page"] = 1
-                            markup.add(next_sym, back, *symbols, next_sym, *coins_menu) 
+                    to_delete = [x for x in settings["temp_symbols"] if x in settings["chosen_symbols"]]
+                    if to_delete:
+                        if len(to_delete) < len(settings["temp_symbols"]):
+                            settings["temp_symbols"] = [x for x in settings["temp_symbols"] if x not in settings["chosen_symbols"]]
+                            f = open("../config/last_symbols.txt","w")
+                            f.write(", ".join(settings["temp_symbols"]))
+                            f.close()
+                            settings["chosen_symbols"] = []
+                            markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+                            symbols = [types.KeyboardButton(x) for x in settings["temp_symbols"][:100]]
+                            if len(settings["temp_symbols"]) > 100:
+                                settings["symbs_page"] = 1
+                                markup.add(next_sym, back, *symbols, next_sym, *coins_menu) 
+                            else:
+                                markup.add(*symbols, *coins_menu)   
+                        
+                            bot.send_message(message.chat.id, text="Готово")
+                            bot.send_message(message.chat.id, text="Удалил: " + str(to_delete).\
+                                            replace("[", "").replace("]", "").replace("'", ""), reply_markup=markup)
+                            if settings["bot_status"] in ["on", "wait"]:
+                                bot.send_message(message.chat.id, text="Настройки вступят в силу, когда бот закончит текущий цикл запросов к Bybit")
+                                settings["bot_status"] = "wait"
                         else:
-                            markup.add(*symbols, *coins_menu)   
-                    
-                        bot.send_message(message.chat.id, text="Готово")
-                        bot.send_message(message.chat.id, text="Удалил: " + str(deleted).\
-                                        replace("[", "").replace("]", "").replace("'", ""), reply_markup=markup)
-                        if settings["bot_status"] in ["on", "wait"]:
-                            bot.send_message(message.chat.id, text="Настройки вступят в силу, когда бот закончит текущий цикл запросов к Bybit")
-                            settings["bot_status"] = "wait"
+                            bot.send_message(message.chat.id, text="Нельзя удалить все монеты")
                     else:
                         bot.send_message(message.chat.id, text="Ты ничего не поменял")            
 
@@ -568,10 +569,7 @@ def go_bot(message):
                 if  settings["chosen_symbols"]:
                     if settings["chosen_symbols"]!= settings["temp_symbols"]:
                         settings["temp_symbols"] = settings["chosen_symbols"]
-                        try:
-                            f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
-                        except:
-                            f = open("C:/ginger_bot/last_symbols.txt","w")
+                        f = open("../config/last_symbols.txt","w")
                         f.write(", ".join(settings["temp_symbols"]))
                         f.close()
                         settings["chosen_symbols"] = []
@@ -595,10 +593,7 @@ def go_bot(message):
                 if settings["chosen_symbols"]:
                     settings["temp_symbols"] = sorted(list(set(settings["temp_symbols"] + settings["chosen_symbols"])))
                     if settings["temp_symbols"]!= settings["symbols"]:
-                        try:
-                            f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
-                        except:
-                            f = open("C:/ginger_bot/last_symbols.txt","w")
+                        f = open("../config/last_symbols.txt","w")
                         f.write(", ".join(settings["temp_symbols"]))
                         f.close()
                         settings["chosen_symbols"] = []
@@ -626,10 +621,7 @@ def go_bot(message):
             elif message.text == "ДОБАВИТЬ ВСЕ ДОСТУПНЫЕ":
                 settings["menu_step"] = "settings"
                 settings["temp_symbols"] = settings["bybit_symbols"]
-                try:
-                    f = open("D:/code/python/projects/trading/ginger_bot/last_symbols.txt","w")
-                except:
-                    f = open("C:/ginger_bot/last_symbols.txt","w")
+                f = open("../config/last_symbols.txt","w")
                 f.write(", ".join(settings["temp_symbols"]))
                 f.close()
                 settings["chosen_symbols"] = []
@@ -718,10 +710,7 @@ def go_bot(message):
             elif message.text == "Ok":
                 if settings["chosen_intervals"]:
                     settings["temp_intervals"] = {k:v for k,v in def_intervals.items() if k in settings["chosen_intervals"]}
-                    try:
-                        f = open("D:/code/python/projects/trading/ginger_bot/last_intervals.txt","w")
-                    except:
-                        f = open("C:/ginger_bot/last_intervals.txt","w")
+                    f = open("../config/last_intervals.txt","w")
                     f.write(", ".join(settings["temp_intervals"].keys()))
                     f.close()
                     settings["chosen_intervals"] = []
