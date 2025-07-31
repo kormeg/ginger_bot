@@ -22,11 +22,12 @@ from telebot import types
 
 
 TOKEN = "8158212209:AAGYHNwv5wUOi5NmKmIDnyD1fnK_d3hJmMk"
-# TOKEN = "7824128266:AAEzbktsauCG_M64TVJuEFEx5l13JYiVtvg"
+
 MEAN_LENGTH = 15
 LIMIT = 24
 
 bot = telebot.TeleBot(TOKEN)
+bot.remove_webhook()
 cl = api.API("demo_api")
 
 stairs_steps = [2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -883,5 +884,5 @@ def go_bot(message):
                 time.sleep(5)
 
 # bot.polling(none_stop=True)
-bot.remove_webhook()
+
 bot.infinity_polling()
